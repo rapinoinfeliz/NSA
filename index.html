@@ -361,6 +361,21 @@
                 </div>
             </div>
         </div>
+
+        <div class="card" style="margin-top: 16px;">
+            <div class="card-title">
+                Recovery & Aerobic
+            </div>
+            <div class="data-row">
+                <div class="data-label-group">
+                    <span class="data-label">Easy Pace <span class="tag tag-E">G.1 / G.2</span></span>
+                    <span class="lactate-est" style="color: var(--text-secondary);">Recuperação e Volume</span>
+                </div>
+                <div class="data-value-group">
+                    <div class="data-value" id="pace-easy">--:--/km</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -378,6 +393,26 @@
                 { t: 40.00, v: 22 }
             ];
 
+            // Easy Pace Table (5k Time Seconds -> Easy Pace Seconds/km)
+            // Data provided by user
+            const EASY_DATA = [
+                { t: 1800, p: 514 }, { t: 1780, p: 509 }, { t: 1760, p: 503 },
+                { t: 1740, p: 497 }, { t: 1720, p: 491 }, { t: 1700, p: 485 },
+                { t: 1680, p: 480 }, { t: 1660, p: 474 }, { t: 1640, p: 469 },
+                { t: 1620, p: 463 }, { t: 1600, p: 457 }, { t: 1580, p: 451 },
+                { t: 1560, p: 446 }, { t: 1540, p: 440 }, { t: 1520, p: 434 },
+                { t: 1500, p: 429 }, { t: 1480, p: 423 }, { t: 1460, p: 418 },
+                { t: 1440, p: 412 }, { t: 1420, p: 406 }, { t: 1400, p: 401 },
+                { t: 1380, p: 395 }, { t: 1360, p: 389 }, { t: 1340, p: 383 },
+                { t: 1320, p: 378 }, { t: 1300, p: 372 }, { t: 1280, p: 366 },
+                { t: 1260, p: 361 }, { t: 1240, p: 355 }, { t: 1220, p: 350 },
+                { t: 1200, p: 343 }, { t: 1180, p: 337 }, { t: 1160, p: 331 },
+                { t: 1140, p: 326 }, { t: 1120, p: 320 }, { t: 1100, p: 314 },
+                { t: 1080, p: 308 }, { t: 1060, p: 302 }, { t: 1040, p: 298 },
+                { t: 1020, p: 292 }, { t: 1000, p: 286 }, { t: 980, p: 280 },
+                { t: 960, p: 274 }, { t: 940, p: 268 }, { t: 920, p: 262 }
+            ].sort((a, b) => a.t - b.t); // Ensure sorted by time ascending (fastest to slowest logic, but values are time so bigger is slower)
+
             // --- Selectors ---
             const $ = (id) => document.getElementById(id);
             const els = {
@@ -392,6 +427,7 @@
                 dist6: $('dist-6min'),
                 pace10: $('pace-10min'),
                 dist10: $('dist-10min'),
+                paceEasy: $('pace-easy'),
                 copyBtn: $('copy-btn') // Re-select dynamically if needed, or by ID
             };
 
@@ -435,6 +471,24 @@
                 return "--";
             }
 
+            function getEasyPace(fiveKSeconds) {
+                // Extrapolation limits
+                if (fiveKSeconds < 920) return 262; // Cap at 15:20
+                if (fiveKSeconds > 1800) return 514; // Cap at 30:00
+
+                // Interpolation
+                for (let i = 0; i < EASY_DATA.length - 1; i++) {
+                    const cur = EASY_DATA[i];
+                    const next = EASY_DATA[i + 1];
+                    // EASY_DATA is sorted by T ascending (920 -> 1800)
+                    if (fiveKSeconds >= cur.t && fiveKSeconds <= next.t) {
+                        const ratio = (fiveKSeconds - cur.t) / (next.t - cur.t);
+                        return cur.p + ratio * (next.p - cur.p);
+                    }
+                }
+                return 0;
+            }
+
             function update() {
                 const d = parseFloat(els.distance.value);
                 const tSec = parseTime(els.time.value);
@@ -468,6 +522,10 @@
                 const p3 = 1.0020 * pred5kPace + 13.20;
                 els.pace3.textContent = formatTime(p3) + "/km";
                 els.dist3.textContent = Math.round((180 / p3) * 1000) + " m";
+
+                // Easy Pace
+                const pEasy = getEasyPace(pred5kSec);
+                els.paceEasy.textContent = formatTime(pEasy) + "/km";
             }
 
             function copyResults() {
@@ -482,7 +540,9 @@
                     `Sub-T Workouts:`,
                     `- 10min (30KP): ${els.pace10.textContent}`,
                     `- 6min (HMP): ${els.pace6.textContent}`,
-                    `- 3min (15KP): ${els.pace3.textContent}`
+                    `- 3min (15KP): ${els.pace3.textContent}`,
+                    ``,
+                    `Easy Pace: ${els.paceEasy.textContent}`
                 ].join('\n');
 
                 navigator.clipboard.writeText(results).then(() => {
