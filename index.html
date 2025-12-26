@@ -172,8 +172,19 @@
         <h1>Pacing Calculator</h1>
 
         <div class="input-group">
-            <label for="distance">Time Trial Distance (meters)</label>
-            <input type="number" id="distance" value="2955" placeholder="e.g. 2955">
+            <label for="distance">Time Trial Distance</label>
+            <div style="display: flex; gap: 10px; margin-bottom: 8px;">
+                <select id="dist-preset"
+                    style="flex: 1; padding: 12px; background-color: #0d1117; border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); outline: none;">
+                    <option value="custom">Custom</option>
+                    <option value="3000">3000m</option>
+                    <option value="5000">5K (5000m)</option>
+                    <option value="10000">10K (10000m)</option>
+                    <option value="21097">Half Marathon (21.1k)</option>
+                    <option value="42195">Marathon (42.2k)</option>
+                </select>
+            </div>
+            <input type="number" id="distance" value="2955" placeholder="Distance in meters">
         </div>
 
         <div class="input-group">
@@ -224,6 +235,8 @@
     <script>
         const distanceInput = document.getElementById('distance');
         const timeInput = document.getElementById('time');
+
+        const presetSelect = document.getElementById('dist-preset');
 
         // Outputs
         const ttPaceEl = document.getElementById('tt-pace');
@@ -300,13 +313,35 @@
             dist10minEl.textContent = Math.round(d10_meters) + " m";
         }
 
-        distanceInput.addEventListener('input', calculate);
+        presetSelect.addEventListener('change', () => {
+            if (presetSelect.value !== 'custom') {
+                distanceInput.value = presetSelect.value;
+                calculate();
+            }
+        });
+
+        distanceInput.addEventListener('input', () => {
+            // Check if value matches a preset
+            const val = distanceInput.value;
+            let match = false;
+            for (let option of presetSelect.options) {
+                if (option.value === val) {
+                    presetSelect.value = val;
+                    match = true;
+                    break;
+                }
+            }
+            if (!match) presetSelect.value = 'custom';
+            calculate();
+        });
+
         timeInput.addEventListener('input', calculate);
 
-        // Initial calc
-        calculate();
+        // Initial check
+        distanceInput.dispatchEvent(new Event('input'));
     </script>
 
 </body>
 
 </html>
+```
