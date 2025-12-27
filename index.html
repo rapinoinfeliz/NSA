@@ -765,7 +765,39 @@
                 els.copyBtn.addEventListener('click', copyResults);
             }
 
+            // --- Auto-Fetch Weather for Florianópolis ---
+            async function fetchWeather() {
+                try {
+                    // Florianópolis Coords: -27.5969, -48.5495
+                    const lat = -27.5969;
+                    const lon = -48.5495;
+                    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,dew_point_2m`;
+
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error("Weather API Error");
+                    const data = await response.json();
+
+                    if (data.current) {
+                        els.temp.value = data.current.temperature_2m.toFixed(1);
+                        els.dew.value = data.current.dew_point_2m.toFixed(1);
+                        update();
+
+                        // Add a small note about source
+                        const note = document.createElement('div');
+                        note.style.fontSize = "0.65rem";
+                        note.style.color = "var(--text-secondary)";
+                        note.style.marginTop = "4px";
+                        note.style.textAlign = "right";
+                        note.textContent = "Live data from Florianópolis (Open-Meteo)";
+                        els.weatherImpact.parentNode.appendChild(note);
+                    }
+                } catch (e) {
+                    console.warn("Could not fetch weather:", e);
+                }
+            }
+
             // Initialize
+            fetchWeather(); // Try to fetch on load
             update();
         })();
     </script>
