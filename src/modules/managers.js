@@ -13,14 +13,23 @@ export class LocationManager {
     }
 
     loadState() {
-        return loadFromStorage('rw_location');
+        const saved = loadFromStorage('rw_location');
+        if (saved) {
+            saved.lat = Number(saved.lat);
+            saved.lon = Number(saved.lon);
+        }
+        return saved;
     }
 
     loadRecents() {
         let recents = loadFromStorage('rw_recents') || [];
-        // Robust Dedupe on Load
+        // Robust Dedupe AND Type Sanitization on Load
         const unique = [];
         recents.forEach(r => {
+            // Force Number types to prevent downstream crashes
+            r.lat = Number(r.lat);
+            r.lon = Number(r.lon);
+
             if (!unique.some(u => this._isSameLocation(u, r))) {
                 unique.push(r);
             }
