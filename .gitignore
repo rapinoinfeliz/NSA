@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# System
+.DS_Store
+Thumbs.db
+
+# Dev Scripts & Tools
+*.py
+*.sh
+debug_*.js
+inspect_*.js
+test_*.mjs
+fix_*.js
+optimize_*.js
+restore_*.js
+inject_*.js
+replace_*.js
+
+# Helper Temp
+climate_logic_raw.js
+climate_tab.html
+app.js
+
+# Build artifacts (if any, though we are static)
+dist/
