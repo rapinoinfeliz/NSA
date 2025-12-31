@@ -1,0 +1,381 @@
+// Main Entry Point
+import { HAPCalculator, parseTime, formatTime } from './modules/core.js';
+import { LocationManager } from './modules/managers.js';
+import { fetchWeatherData } from './modules/api.js';
+import { HAP_GRID } from '../data/hap_grid.js'; // Import data module
+
+import * as UI from './modules/ui.js';
+import { loadFromStorage, saveToStorage } from './modules/storage.js';
+
+console.log("Main JS Starting...");
+
+// --- Expose UI to Window (Legacy Support) ---
+console.log("UI Keys:", Object.keys(UI));
+Object.keys(UI).forEach(key => {
+    window[key] = UI[key];
+});
+console.log("UI Exposed. openTab is:", typeof window.openTab);
+
+// --- Global State ---
+window.hapCalc = null; // Will be init with data
+window.locManager = null;
+window.climateManager = null;
+
+// --- Initialization ---
+async function init() {
+    console.log("Initializing App...");
+
+    // 1. Core Logic
+    if (HAP_GRID) {
+        window.hapCalc = new HAPCalculator(HAP_GRID);
+    } else {
+        console.error("HAP_GRID failed to load");
+    }
+
+    // 2. Managers
+    window.locManager = new LocationManager(async (loc) => {
+        // On Location Change
+
+        // 1. Update UI Text Immediately
+        document.querySelectorAll('.current-location-name').forEach(el => {
+            el.textContent = loc.name;
+        });
+        UI.closeLocationModal();
+
+        // 2. Clear/Update Calc
+        UI.update(window.els, window.hapCalc);
+
+        // 3. Trigger Loads Independently
+        UI.setLoading('current', true);
+        UI.setLoading('forecast', true);
+
+        refreshWeather(true)
+            .catch(console.error)
+            .finally(() => {
+                UI.setLoading('current', false);
+                UI.setLoading('forecast', false);
+            });
+
+        if (window.climateManager) {
+            UI.setLoading('climate', true);
+            window.climateManager.loadDataForCurrentLocation()
+                .catch(console.error)
+                .finally(() => UI.setLoading('climate', false));
+        }
+    });
+
+
+
+    // Set initial location button text from saved state
+    document.querySelectorAll('.current-location-name').forEach(el => {
+        el.textContent = window.locManager.current.name;
+    });
+
+    // 3. UI Setup
+    const els = {
+        distance: document.getElementById('distance'),
+        preset: document.getElementById('dist-preset'),
+        time: document.getElementById('time'),
+        temp: document.getElementById('temp'),
+        dew: document.getElementById('dew'),
+        inputPace: document.getElementById('input-pace'),
+        pred5k: document.getElementById('pred-5k'),
+        vdot: document.getElementById('vdot-val'),
+        pace10: document.getElementById('pace-10min'),
+        dist10: document.getElementById('dist-10min'),
+        pace6: document.getElementById('pace-6min'),
+        dist6: document.getElementById('dist-6min'),
+        pace3: document.getElementById('pace-3min'),
+        dist3: document.getElementById('dist-3min'),
+        paceEasy: document.getElementById('pace-easy'),
+        weatherImpact: document.getElementById('weather-impact')
+    };
+    window.els = els; // Export for UI module if it uses window.els (my implementation passed 'els' to update)
+
+    // Attach Window Helpers (Tooltips, specific onclicks)
+    UI.setupWindowHelpers();
+
+    // Attach Event Listeners
+    // Inputs (Debounced)
+    const inputs = [els.distance, els.time, els.temp, els.dew];
+    inputs.forEach(el => {
+        if (el) el.addEventListener('input', () => {
+            // Debounce or immediate? App.js was immediate.
+            UI.update(els, window.hapCalc);
+        });
+    });
+
+    // Preset Logic
+    if (els.preset) {
+        els.preset.addEventListener('change', () => {
+            const val = els.preset.value;
+            if (val !== 'custom') {
+                els.distance.value = val;
+                UI.update(els, window.hapCalc);
+            }
+        });
+    }
+
+    // Pace Logic (Reverse Calc)
+    if (els.inputPace) {
+        els.inputPace.addEventListener('change', () => { // Change instead of blur for better UX on enter
+            const p = parseTime(els.inputPace.value);
+            const dStr = els.distance.value;
+            if (p > 0 && dStr) {
+                const d = parseFloat(dStr);
+                const tSec = (d / 1000.0) * p;
+                els.time.value = formatTime(tSec);
+                UI.update(els, window.hapCalc);
+            }
+        });
+    }
+
+    // Copy Button
+    const copyBtn = document.getElementById('copy-btn');
+    if (copyBtn) copyBtn.addEventListener('click', () => UI.copyResults(els));
+
+    // Initial Load
+    // Load State done in LocationManager for location, but inputs?
+    // We need to load input state.
+    const savedState = loadFromStorage('vdot_calc_state');
+    if (savedState) {
+        if (els.distance) els.distance.value = savedState.distance || '';
+        if (els.time) els.time.value = savedState.time || '';
+    }
+
+    // Initial Update
+    UI.update(els, window.hapCalc);
+
+    // Weather Fetch
+    UI.setLoading('current', true);
+    UI.setLoading('forecast', true);
+    await refreshWeather();
+    UI.setLoading('current', false);
+    UI.setLoading('forecast', false);
+
+    // Climate Load Removed (Lazy)
+}
+
+async function refreshWeather(force = false) {
+    const loc = window.locManager.current;
+    if (!loc) return;
+
+    try {
+        const { weather, air } = await fetchWeatherData(loc.lat, loc.lon);
+
+        // Update Globals/UI State
+        UI.setForecastData(processForecast(weather.hourly)); // We need to process it
+        window.weatherData = weather; // for legacy
+        window.airData = air;
+
+        // Render Current
+        UI.renderCurrentTab(weather.current, air.current,
+            weather.hourly.precipitation_probability[0],
+            weather.hourly.precipitation[0],
+            weather.daily,
+            window.hapCalc
+        );
+
+        // Render Forecasts
+        UI.renderAllForecasts();
+
+        // Update Inputs if empty?
+        const els = window.els;
+        if ((!els.temp.value && !els.dew.value) || force) {
+            els.temp.value = weather.current.temperature_2m;
+            els.dew.value = weather.current.dew_point_2m;
+            UI.update(els, window.hapCalc);
+        }
+
+    } catch (e) {
+        console.error("Weather Refresh Failed", e);
+    }
+}
+
+function processForecast(hourly) {
+    // Transform OpenMeteo hourly arrays to array of objects
+    if (!hourly) return [];
+    const len = hourly.time.length;
+    const data = [];
+    for (let i = 0; i < len; i++) {
+        data.push({
+            time: hourly.time[i],
+            temp: hourly.temperature_2m[i],
+            dew: hourly.dew_point_2m[i],
+            precip: hourly.precipitation[i],
+            prob: hourly.precipitation_probability[i],
+            wind: hourly.wind_speed_10m[i]
+        });
+    }
+    return data;
+}
+
+// --- Lazy Loader ---
+// --- Lazy Loader ---
+async function loadClimateModule() {
+    if (window.climateManager) return;
+
+    UI.setLoading('climate', true);
+
+    try {
+        const { ClimateManager } = await import('./modules/climate_manager.js');
+        window.climateManager = new ClimateManager(window.locManager, (data) => {
+            UI.setClimateData(data);
+            UI.renderClimateHeatmap();
+            UI.renderClimateTable();
+        });
+        await window.climateManager.loadDataForCurrentLocation();
+    } catch (e) {
+        console.error("Failed to lazy load Climate Manager", e);
+    } finally {
+        UI.setLoading('climate', false);
+    }
+}
+
+// --- Global Event Delegation ---
+function setupGlobalEvents() {
+    console.log("Setting up global events...");
+
+    document.addEventListener('click', (e) => {
+        const target = e.target.closest('[data-action]');
+        if (!target) return;
+
+        const action = target.dataset.action;
+        // console.log("Action:", action, target.dataset);
+
+        switch (action) {
+            case 'tab':
+                if (target.dataset.tab === 'climate') loadClimateModule();
+                UI.openTab(target.dataset.tab, target);
+                break;
+            case 'location-modal':
+                UI.openLocationModal();
+                break;
+            case 'location-close':
+                UI.closeLocationModal();
+                break;
+            case 'location-search-clear':
+                // Reset search logic if needed
+                const searchInp = document.getElementById('loc-search');
+                if (searchInp) searchInp.value = '';
+                // renderRecents logic is inside ui.js, might need to call it
+                break;
+            case 'gps':
+                UI.useGPS();
+                break;
+            case 'vdot-details':
+                UI.toggleVDOTDetails();
+                break;
+            case 'insight-range':
+                UI.setBestRunRange(target.dataset.range, e);
+                break;
+            case 'select-forecast':
+                UI.toggleForeSelection(target.dataset.time || null, e);
+                break;
+            case 'filter-climate':
+                // For the 'X' button on climate filter
+                UI.toggleClimateFilter(null, null, e);
+                break;
+            case 'filter-impact':
+                // For legend items
+                UI.toggleImpactFilter(target.dataset.category);
+                break;
+            case 'pace-mode':
+                UI.setPaceMode(target.dataset.mode);
+                break;
+            case 'sort-forecast':
+                UI.toggleForeSort(target.dataset.col);
+                break;
+            case 'sort-climate':
+            case 'sort-climate':
+                UI.sortClimate(target.dataset.col);
+                break;
+            case 'chart-interact':
+                // Click on Chart
+                UI.handleChartClick(e,
+                    parseFloat(target.dataset.totalW),
+                    parseFloat(target.dataset.chartW),
+                    parseFloat(target.dataset.padLeft),
+                    parseInt(target.dataset.len)
+                );
+                break;
+        }
+    });
+
+    // Hover Events for Heatmap (Delegated)
+    document.addEventListener('mousemove', (e) => {
+        let target = e.target.closest('[data-action="select-forecast"]');
+        if (target) {
+            UI.handleCellHover(e, target);
+            UI.moveForeTooltip(e);
+            return;
+        }
+
+        target = e.target.closest('[data-action="chart-interact"]');
+        if (target) {
+            UI.handleChartHover(e,
+                parseFloat(target.dataset.totalW),
+                parseFloat(target.dataset.chartW),
+                parseFloat(target.dataset.padLeft),
+                parseInt(target.dataset.len)
+            );
+            // Chart hover handles tooltip positioning internally? No, handleCellHover uses moveForeTooltip.
+            // handleChartHover shows/moves tooltip itself.
+        }
+    });
+
+    document.addEventListener('mouseover', (e) => {
+        const target = e.target.closest('[data-action="select-forecast"]');
+        if (target) {
+            UI.handleCellHover(e, target);
+        }
+    });
+
+    document.addEventListener('mouseout', (e) => {
+        const target = e.target.closest('[data-action="select-forecast"]');
+        if (target) {
+            UI.hideForeTooltip();
+            return;
+        }
+        const chartTarget = e.target.closest('[data-action="chart-interact"]');
+        if (chartTarget) {
+            UI.hideForeTooltip();
+        }
+    });
+}
+
+// Start
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
+
+// Call setup in init
+
+// Wait, I can't modify Line 31 easily with this block which is at line 200.
+// I will just run it at the end of the file? No, listeners should be set up early.
+// I'll call it right before defining init? 
+// Actually, I will replace the end of the file and invoke it.
+
+setupGlobalEvents();
+// Globals for legacy (still needed until HTML is fully stripped)
+window.fetchWeather = () => refreshWeather(true);
+window.openTab = UI.openTab;
+window.setBestRunRange = UI.setBestRunRange;
+window.toggleForeSelection = UI.toggleForeSelection;
+window.setPaceMode = UI.setPaceMode;
+window.toggleForeSort = UI.toggleForeSort;
+window.toggleClimateFilter = UI.toggleClimateFilter;
+window.sortClimate = UI.sortClimate;
+window.useGPS = UI.useGPS;
+window.openLocationModal = UI.openLocationModal;
+window.closeLocationModal = UI.closeLocationModal;
+window.toggleVDOTDetails = UI.toggleVDOTDetails;
+window.toggleImpactFilter = UI.toggleImpactFilter;
+// handleCellHover etc needed?
+// window.handleCellHover = UI.handleCellHover; // Not used inline anymore?
+// window.moveForeTooltip = UI.moveForeTooltip;
+// window.hideForeTooltip = UI.hideForeTooltip;
+// window.handleChartHover = UI.handleChartHover;
+// window.handleChartClick = UI.handleChartClick;

@@ -2,292 +2,41 @@
 <html lang="en">
 
 <head>
+    <link href="dist/output.css" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NSA Pacing Calculator</title>
-    <style>
-        :root {
-            --bg-color: #0d1117;
-            --card-bg: #161b22;
-            --text-primary: #e6edf3;
-            --text-secondary: #8b949e;
-            --accent-color: #58a6ff;
-            --border-color: #30363d;
-            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            --lactate-color: #ec4899;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            font-family: var(--font-family);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 500px;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-
-        h1 {
-            font-size: 1.4rem;
-            font-weight: 600;
-            background: linear-gradient(90deg, #58a6ff, #ec4899);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin: 0;
-        }
-
-        .subtitle {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-top: 2px;
-        }
-
-        .copy-btn {
-            background-color: #21262d;
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 6px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: background 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .copy-btn:hover {
-            background-color: #30363d;
-            border-color: #8b949e;
-        }
-
-        .copy-btn:active {
-            transform: translateY(1px);
-        }
-
-        .input-section {
-            background-color: #0d1117;
-            padding: 16px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            margin-bottom: 20px;
-        }
-
-        .input-row {
-            display: flex;
-            gap: 12px;
-        }
-
-        .input-group {
-            flex: 1;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-
-        select,
-        input {
-            width: 100%;
-            padding: 10px;
-            background-color: #161b22;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            color: var(--text-primary);
-            font-size: 0.9rem;
-            outline: none;
-            transition: border-color 0.2s;
-            -webkit-appearance: none;
-        }
-
-        select:focus,
-        input:focus {
-            border-color: var(--accent-color);
-        }
-
-        .vdot-box {
-            background: linear-gradient(135deg, rgba(88, 166, 255, 0.08), rgba(236, 72, 153, 0.08));
-            border: 1px solid rgba(88, 166, 255, 0.2);
-            text-align: center;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-left: 20px;
-            padding-right: 20px;
-        }
-
-        .vdot-info {
-            text-align: left;
-        }
-
-        .vdot-label {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .vdot-sub {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-top: 2px;
-        }
-
-        .vdot-val {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #fff;
-        }
-
-        .card-title {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-            font-weight: 700;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .card-header-note {
-            font-size: 0.7rem;
-            color: var(--lactate-color);
-            text-transform: none;
-            font-weight: 500;
-        }
-
-        .data-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-            padding-bottom: 12px;
-            border-bottom: 1px dashed rgba(48, 54, 61, 0.3);
-        }
-
-        .data-row:last-child {
-            margin-bottom: 0;
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-
-        .data-label-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .data-label {
-            color: var(--text-primary);
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        .lactate-est {
-            font-size: 0.75rem;
-            color: var(--lactate-color);
-            margin-top: 2px;
-        }
-
-        .data-value-group {
-            text-align: right;
-        }
-
-        .data-value {
-            font-weight: 600;
-            color: var(--text-primary);
-            font-size: 1rem;
-        }
-
-        .data-sub {
-            display: block;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-top: 2px;
-        }
-
-        /* Distinct Tags */
-        .tag {
-            font-size: 0.65rem;
-            padding: 1px 6px;
-            border-radius: 4px;
-            margin-left: 6px;
-            font-weight: 600;
-            display: inline-block;
-            vertical-align: middle;
-            text-transform: uppercase;
-        }
-
-        /* 15KP = Gold/Orange */
-        .tag-15kp {
-            background: rgba(245, 158, 11, 0.15);
-            color: #fbbf24;
-            border: 1px solid rgba(245, 158, 11, 0.3);
-        }
-
-        /* HMP = Blue */
-        .tag-hmp {
-            background: rgba(59, 130, 246, 0.15);
-            color: #60a5fa;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-        }
-
-        /* 30KP = Green */
-        .tag-30kp {
-            background: rgba(16, 185, 129, 0.15);
-            color: #34d399;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-
-        /* EZ = Purple */
-        .tag-ez {
-            background: rgba(163, 113, 247, 0.15);
-            color: #a371f7;
-            border: 1px solid rgba(163, 113, 247, 0.3);
-        }
-    </style>
+    <title>RunWeather</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <!-- App Logic (ES Module) -->
+    <!-- App Logic (ES Module) -->
+    <!-- Cache Busting: increment v=ID on deploy -->
+    <script type="module" src="src/main.js?v=1.0.0"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <div class="container">
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+        <button class="tab-btn active" data-action="tab" data-tab="calculator">Calculator</button>
+        <button class="tab-btn" data-action="tab" data-tab="current">Conditions</button>
+        <button class="tab-btn" data-action="tab" data-tab="forecast16">Forecast</button>
+        <button class="tab-btn" data-action="tab" data-tab="climate">Climate</button>
+    </div>
+
+    <!-- TAB: CALCULATOR -->
+    <div id="tab-calculator" class="tab-content active container" style="max-width: 650px;">
         <div class="header">
             <div>
                 <h1>NSA Calculator</h1>
             </div>
+            <button class="location-btn" data-action="location-modal" style="margin-left: auto; margin-right: 10px;">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <span class="current-location-name">Florianópolis</span>
+            </button>
             <button class="copy-btn" id="copy-btn" title="Copy results to clipboard">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -297,34 +46,87 @@
             </button>
         </div>
 
-        <div class="input-section">
-            <label>Time Trial Input</label>
-            <div class="input-row">
-                <div class="input-group" style="flex: 1.2;">
-                    <select id="dist-preset">
-                        <option value="custom">Custom</option>
-                        <option value="3000">3000m</option>
-                        <option value="5000">5K</option>
-                        <option value="10000">10K</option>
-                        <option value="21097">Half Mar.</option>
-                        <option value="42195">Marathon</option>
-                    </select>
+        <div class="input-section" style="background:transparent; border:none; padding:0;">
+            <!-- Time Trial Block -->
+            <div class="modern-input-card">
+                <div class="modern-label">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    Time Trial Input
                 </div>
-                <div class="input-group" style="flex: 2;">
-                    <input type="number" id="distance" value="2955" placeholder="Meters">
+                <div class="input-row-grid">
+                    <div class="floating-input-group">
+                        <label>Preset</label>
+                        <select id="dist-preset" class="modern-input">
+                            <option value="custom">Custom</option>
+                            <option value="3000">3000m</option>
+                            <option value="5000">5K</option>
+                            <option value="10000">10K</option>
+                            <option value="21097">Half Mar.</option>
+                            <option value="42195">Marathon</option>
+                        </select>
+                    </div>
+                    <div class="floating-input-group">
+                        <label>Distance (m)</label>
+                        <input type="number" id="distance" value="2955" placeholder="e.g. 5000" class="modern-input">
+                    </div>
+                    <div class="floating-input-group">
+                        <label>Time (MM:SS)</label>
+                        <input type="text" id="time" value="11:16" placeholder="MM:SS" class="modern-input">
+                    </div>
+                    <div class="floating-input-group">
+                        <label>Pace (/km)</label>
+                        <input type="text" id="input-pace" placeholder="MM:SS" class="modern-input">
+                    </div>
                 </div>
-                <div class="input-group" style="flex: 1.5;">
-                    <input type="text" id="time" value="11:16" placeholder="MM:SS">
+            </div>
+
+            <!-- Weather Block -->
+            <div class="modern-input-card">
+                <div class="modern-label">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
+                    </svg>
+                    Weather Conditions (Optional)
+                </div>
+                <div class="input-row-grid cols-2">
+                    <div class="floating-input-group">
+                        <label>Temperature (°C)</label>
+                        <input type="number" id="temp" placeholder="Temp" title="Temperature in Celsius"
+                            class="modern-input">
+                    </div>
+                    <div class="floating-input-group">
+                        <label>Dew Point (°C)</label>
+                        <input type="number" id="dew" placeholder="Dew" title="Dew Point in Celsius"
+                            class="modern-input">
+                    </div>
+                </div>
+                <div id="weather-impact"
+                    style="font-size: 0.8rem; color: var(--lactate-color); margin-top: 12px; font-weight:500; min-height:1em;">
                 </div>
             </div>
         </div>
 
-        <div class="vdot-box">
-            <div class="vdot-info">
-                <div class="vdot-label">Estimated VDOT</div>
-                <div class="vdot-sub">Based on 5k: <span id="pred-5k" style="color:#e6edf3;">--:--</span></div>
+        <div class="vdot-box" id="vdot-card" style="flex-direction:column; align-items:stretch; cursor:pointer;"
+            data-action="vdot-details">
+            <div class="vdot-header flex-between">
+                <div class="vdot-info">
+                    <div class="vdot-label">Estimated VDOT <span
+                            style="font-size:0.7em; opacity:0.7; font-weight:400;">(Click to Expand)</span></div>
+                    <div class="vdot-sub">Based on 5k: <span id="pred-5k" style="color:#e6edf3;">--:--</span></div>
+                    <div class="vdot-sub" style="margin-top:2px;">Threshold: <span id="vdot-threshold"
+                            style="color:#fbbf24; font-weight:700;">--:--/km</span></div>
+                </div>
+                <div class="vdot-right" style="text-align:right;">
+                    <div class="vdot-val" id="vdot-val">--</div>
+                </div>
             </div>
-            <div class="vdot-val" id="vdot-val">--</div>
+            <div id="vdot-details"
+                style="display:none; margin-top:16px; border-top:1px solid rgba(255,255,255,0.1); padding-top:12px;">
+                <!-- Detailed Rows will be injected here -->
+            </div>
         </div>
 
         <div class="card">
@@ -379,217 +181,278 @@
         </div>
     </div>
 
+    <!-- TAB: CURRENT -->
+    <div id="tab-current" class="tab-content container" style="max-width: 650px;">
+        <div class="header">
+            <div class="header-left">
+                <h1>Current Conditions</h1>
+                <div class="subtitle">Live Tracking</div>
+            </div>
+            <button class="location-btn" onclick="window.openLocationModal()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <span class="current-location-name">Florianópolis</span>
+            </button>
+        </div>
+        <div id="current-content" class="current-grid">
+            <div style="text-align:center; padding:40px; color:var(--text-secondary);">
+                <svg class="animate-spin" style="width:24px;height:24px;margin:auto;" xmlns="http://www.w3.org/2000/svg"
+                    fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                </svg>
+                <div style="margin-top:12px; font-size:0.9em;">Loading Weather...</div>
+            </div>
+        </div>
+    </div>
+    <div id="loading-current" class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+    </div>
+
+
+
+    <!-- TAB: FORECAST 16 DAYS -->
+    <div id="tab-forecast16" class="tab-content container" style="max-width: 650px;">
+        <div class="header">
+            <div class="header-left">
+                <h1>Forecast</h1>
+                <div class="subtitle">14-Day Heat Impact</div>
+            </div>
+            <button class="location-btn" onclick="window.openLocationModal()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <span class="current-location-name">Florianópolis</span>
+            </button>
+        </div>
+
+        <!-- Best Run Time Banner (Minimal) -->
+        <div id="best-run-banner" class="insight-banner" style="display:none;">
+            <div class="insight-left">
+                <span style="margin-right:8px;">Best Window</span>
+                <div class="insight-selector">
+                    <span class="insight-btn active" data-action="insight-range" data-range="24h">24h</span>
+                    <span class="insight-btn" data-action="insight-range" data-range="7d">7d</span>
+                    <span class="insight-btn" data-action="insight-range" data-range="14d">14d</span>
+                </div>
+            </div>
+            <div style="text-align:right;">
+                <span class="insight-val" id="best-run-val">--:--</span>
+                <span id="best-run-impact" class="insight-impact">--%</span>
+            </div>
+        </div>
+
+        <!-- Weekly Heatmap -->
+        <div
+            style="background:var(--card-bg); border-radius:12px; padding:15px; margin-bottom:20px; border:1px solid var(--border-color);">
+            <h3 class="h3-title">
+                Forecast Heatmap</h3>
+            <div style="overflow-x:auto;">
+                <div id="forecast-grid-container-16" class="forecast-grid">
+                    <!-- JS Injected -->
+                </div>
+            </div>
+            <!-- Legend -->
+            <div class="legend-container" id="legend-container-16"
+                style="display:flex; justify-content:center; gap:8px; margin-top:10px; font-size:0.75rem; color:var(--text-secondary); align-items:center; flex-wrap:wrap;">
+                <!-- JS Injected -->
+            </div>
+        </div>
+
+        <!-- Trend Chart -->
+        <div
+            style="background:var(--card-bg); border-radius:12px; padding:15px; margin-bottom:20px; border:1px solid var(--border-color);">
+            <h3 class="h3-title">
+                Temperature & Dew Point</h3>
+            <div id="forecast-chart-container-16" class="chart-box">
+                <!-- JS Injected SVG -->
+                <div style="text-align:center; color:var(--text-secondary); font-size:0.8rem; padding-top:60px;">Loading
+                    Chart...</div>
+            </div>
+            <div style="display:flex; justify-content:center; gap:16px; margin-top:10px; font-size:0.75rem;">
+                <div style="color:#f87171; display:flex; align-items:center; gap:4px;"><span
+                        style="width:8px; height:8px; border-radius:50%; background:#f87171;"></span> Temp</div>
+                <div style="color:#60a5fa; display:flex; align-items:center; gap:4px;"><span
+                        style="width:8px; height:8px; border-radius:50%; background:#60a5fa;"></span> Dew Point</div>
+            </div>
+        </div>
+
+        <!-- Pace Selector (Shared State) -->
+        <div style="margin-bottom:15px; display:flex; justify-content:flex-end; align-items:center;">
+            <label style="font-size:0.8rem; color:var(--text-secondary); margin-right:8px;">Adjust Paces For:</label>
+            <div id="pace-tag-container-16" style="display:flex; gap:8px;">
+                <button class="tag-btn tag-15kp" data-action="pace-mode" data-mode="15KP">15KP (3min)</button>
+                <button class="tag-btn tag-hmp active" data-action="pace-mode" data-mode="HMP">HMP (6min)</button>
+                <button class="tag-btn tag-30kp" data-action="pace-mode" data-mode="30KP">30KP (10min)</button>
+                <button class="tag-btn tag-ez" data-action="pace-mode" data-mode="EZ">Easy Pace</button>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="forecast-table">
+                <thead>
+                    <tr>
+                        <th data-action="sort-forecast" data-col="time" style="cursor:pointer">Time</th>
+                        <th data-action="sort-forecast" data-col="temp" style="text-align:center; cursor:pointer">Temp
+                        </th>
+                        <th data-action="sort-forecast" data-col="dew" style="text-align:center; cursor:pointer">Dew
+                        </th>
+                        <th data-action="sort-forecast" data-col="rain"
+                            style="min-width:60px; text-align:center; cursor:pointer">Rain/Prob</th>
+
+                        <th data-action="sort-forecast" data-col="wind"
+                            style="min-width:70px; text-align:center; cursor:pointer">Wind</th>
+                        <th data-action="sort-forecast" data-col="impact" style="text-align:center; cursor:pointer">
+                            Impact
+                        </th>
+                        <th data-action="sort-forecast" data-col="impact" style="text-align:right; cursor:pointer">Adj
+                            Pace
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="forecast-body-16">
+                    <tr>
+                        <td colspan="5" style="text-align:center; padding:20px;">Loading forecast...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="loading-forecast" class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+    </div>
+
+    <!-- Climate Tab -->
+    <div id="tab-climate" class="tab-content container" style="max-width: 1000px;">
+        <div class="header">
+            <div class="header-left">
+                <h1>Climate Analysis</h1>
+                <div class="subtitle">Historical Trends</div>
+            </div>
+            <button class="location-btn" onclick="window.openLocationModal()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <span class="current-location-name">Florianópolis</span>
+            </button>
+        </div>
+
+        <div
+            style="background:var(--card-bg); border-radius:12px; padding:15px; margin-bottom:20px; border:1px solid var(--border-color); overflow-x:auto;">
+            <h3 style="margin-top:0; margin-bottom:15px; font-size:1rem; font-weight:600; color:var(--text-primary);">
+                Seasonal Heat Impact
+            </h3>
+
+            <div>
+                <!-- Static X-Axis Labels removed; now rendered by SVG -->
+                <!-- <div
+                    style="display:flex; justify-content:space-between; padding-left:40px; margin-bottom:5px; color:var(--text-secondary); font-size:0.75rem;">
+                    <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
+                    <span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
+                </div> -->
+
+                <div id="climate-heatmap-container"
+                    style="display:grid; gap:1px; grid-template-columns: 40px repeat(53, 1fr);">
+                    <!-- JS Injected -->
+                </div>
+
+                <div id="climate-legend-container"
+                    style="display:flex; justify-content:center; gap:8px; margin-top:10px; font-size:0.75rem; color:var(--text-secondary); align-items:center; flex-wrap:wrap;">
+                    <!-- JS Injected -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div style="background:var(--card-bg); border-radius:12px; padding:15px; border:1px solid var(--border-color);">
+            <div class="flex-between" style="margin-bottom:15px;">
+                <h3 class="h3-title" style="margin:0;">Historical Data Detail</h3>
+                <div class="start-center gap-2">
+                    <span id="climate-filter-label"
+                        style="display:none; font-size:0.65rem; background:var(--accent-color); color:white; padding:1px 4px; border-radius:2px;"></span>
+                    <button id="climate-clear-filter" data-action="filter-climate"
+                        style="display:none; background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:0.75rem; text-decoration:underline;">Clear</button>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="forecast-table">
+                    <thead style="position:sticky; top:0; background:var(--card-bg); z-index:10;">
+                        <tr>
+                            <th style="cursor:pointer; width:35%;" data-action="sort-climate" data-col="date">Time <span
+                                    id="sort-icon-climate-date"></span></th>
+                            <th style="cursor:pointer; text-align:center;" data-action="sort-climate" data-col="temp">
+                                Temp <span id="sort-icon-climate-temp"></span></th>
+                            <th style="cursor:pointer; text-align:center;" data-action="sort-climate" data-col="dew">Dew
+                                <span id="sort-icon-climate-dew"></span>
+                            </th>
+                            <th style="cursor:pointer; text-align:center;" data-action="sort-climate" data-col="precip">
+                                Rain <span id="sort-icon-climate-precip"></span></th>
+                            <th style="cursor:pointer; text-align:center;" data-action="sort-climate" data-col="wind">
+                                Wind <span id="sort-icon-climate-wind"></span></th>
+                            <th style="cursor:pointer; text-align:center;" data-action="sort-climate" data-col="impact">
+                                Impact <span id="sort-icon-climate-impact">▼</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="climateTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div id="loading-climate" class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+    </div>
+
+    <div id="forecast-tooltip" class="forecast-tooltip"></div>
+    <!-- Location Modal -->
+    <div id="loc-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:600; color:white;">Select Location</span>
+                <span id="close-modal" class="clickable" data-action="location-close"
+                    style="font-size:1.5rem; line-height:1; color:var(--text-secondary);">&times;</span>
+            </div>
+
+            <button data-action="gps" class="modern-button" id="gps-btn"
+                style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:10px;">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M12 22s-8-4-8-10V5l8-3 8 3v7c0 6-8 10-8 10z"></path>
+                </svg>
+                Use My Location
+            </button>
+
+            <div style="text-align:center; color:var(--text-secondary); font-size:0.8rem; margin:5px 0;">OR</div>
+
+            <div class="search-box">
+                <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                    viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="loc-search" class="search-input" placeholder="Search city..." autocomplete="off">
+            </div>
+
+            <div id="loc-results" class="loc-results"></div>
+        </div>
+    </div>
+
+    <!-- PWA Service Worker -->
     <script>
-        (function () {
-            // --- Immutable Data ---
-            // VDOT Table (5k Time Minutes -> VDOT)
-            // Source: Jack Daniels' Running Formula approximations
-            const VDOT_DATA = [
-                { t: 15.00, v: 67 }, { t: 16.00, v: 63 }, { t: 17.00, v: 59 },
-                { t: 18.00, v: 56 }, { t: 19.00, v: 53 }, { t: 20.00, v: 49.8 },
-                { t: 21.00, v: 47 }, { t: 22.00, v: 45 }, { t: 23.00, v: 43 },
-                { t: 24.00, v: 41 }, { t: 25.00, v: 39 }, { t: 26.00, v: 37 },
-                { t: 27.00, v: 35.5 }, { t: 28.00, v: 34 }, { t: 29.00, v: 32.5 },
-                { t: 30.00, v: 31 }, { t: 32.00, v: 29 }, { t: 35.00, v: 26 },
-                { t: 40.00, v: 22 }
-            ];
-
-            // Easy Pace Table (5k Time Seconds -> Easy Pace Seconds/km)
-            // Data provided by user
-            const EASY_DATA = [
-                { t: 1800, p: 514 }, { t: 1780, p: 509 }, { t: 1760, p: 503 },
-                { t: 1740, p: 497 }, { t: 1720, p: 491 }, { t: 1700, p: 485 },
-                { t: 1680, p: 480 }, { t: 1660, p: 474 }, { t: 1640, p: 469 },
-                { t: 1620, p: 463 }, { t: 1600, p: 457 }, { t: 1580, p: 451 },
-                { t: 1560, p: 446 }, { t: 1540, p: 440 }, { t: 1520, p: 434 },
-                { t: 1500, p: 429 }, { t: 1480, p: 423 }, { t: 1460, p: 418 },
-                { t: 1440, p: 412 }, { t: 1420, p: 406 }, { t: 1400, p: 401 },
-                { t: 1380, p: 395 }, { t: 1360, p: 389 }, { t: 1340, p: 383 },
-                { t: 1320, p: 378 }, { t: 1300, p: 372 }, { t: 1280, p: 366 },
-                { t: 1260, p: 361 }, { t: 1240, p: 355 }, { t: 1220, p: 350 },
-                { t: 1200, p: 343 }, { t: 1180, p: 337 }, { t: 1160, p: 331 },
-                { t: 1140, p: 326 }, { t: 1120, p: 320 }, { t: 1100, p: 314 },
-                { t: 1080, p: 308 }, { t: 1060, p: 302 }, { t: 1040, p: 298 },
-                { t: 1020, p: 292 }, { t: 1000, p: 286 }, { t: 980, p: 280 },
-                { t: 960, p: 274 }, { t: 940, p: 268 }, { t: 920, p: 262 }
-            ].sort((a, b) => a.t - b.t); // Ensure sorted by time ascending (fastest to slowest logic, but values are time so bigger is slower)
-
-            // --- Selectors ---
-            const $ = (id) => document.getElementById(id);
-            const els = {
-                distPreset: $('dist-preset'),
-                distance: $('distance'),
-                time: $('time'),
-                vdot: $('vdot-val'),
-                pred5k: $('pred-5k'),
-                pace3: $('pace-3min'),
-                dist3: $('dist-3min'),
-                pace6: $('pace-6min'),
-                dist6: $('dist-6min'),
-                pace10: $('pace-10min'),
-                dist10: $('dist-10min'),
-                paceEasy: $('pace-easy'),
-                copyBtn: $('copy-btn') // Re-select dynamically if needed, or by ID
-            };
-
-            // --- Logic ---
-            function parseTime(str) {
-                if (!str) return 0;
-                const parts = str.trim().split(':').map(Number);
-                // Handle MM:SS or empty
-                if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-                    return parts[0] * 60 + parts[1];
-                }
-                // Handle HH:MM:SS
-                if (parts.length === 3 && !isNaN(parts[0])) {
-                    return parts[0] * 3600 + parts[1] * 60 + parts[2];
-                }
-                return 0;
-            }
-
-            function formatTime(sec) {
-                if (!sec || isNaN(sec) || sec === Infinity) return "--:--";
-                let m = Math.floor(sec / 60);
-                let s = Math.round(sec % 60);
-                if (s === 60) { m++; s = 0; }
-                return `${m}:${s.toString().padStart(2, '0')}`;
-            }
-
-            function getVDOT(fiveKSeconds) {
-                const tMin = fiveKSeconds / 60;
-                if (tMin < 13) return "70+";
-                if (tMin > 60) return "<20";
-
-                // Linear interpolation
-                for (let i = 0; i < VDOT_DATA.length - 1; i++) {
-                    const cur = VDOT_DATA[i];
-                    const next = VDOT_DATA[i + 1];
-                    if (tMin >= cur.t && tMin <= next.t) {
-                        const ratio = (tMin - cur.t) / (next.t - cur.t);
-                        return (cur.v + ratio * (next.v - cur.v)).toFixed(1);
-                    }
-                }
-                return "--";
-            }
-
-            function getEasyPace(fiveKSeconds) {
-                // Extrapolation limits
-                if (fiveKSeconds < 920) return 262; // Cap at 15:20
-                if (fiveKSeconds > 1800) return 514; // Cap at 30:00
-
-                // Interpolation
-                for (let i = 0; i < EASY_DATA.length - 1; i++) {
-                    const cur = EASY_DATA[i];
-                    const next = EASY_DATA[i + 1];
-                    // EASY_DATA is sorted by T ascending (920 -> 1800)
-                    if (fiveKSeconds >= cur.t && fiveKSeconds <= next.t) {
-                        const ratio = (fiveKSeconds - cur.t) / (next.t - cur.t);
-                        return cur.p + ratio * (next.p - cur.p);
-                    }
-                }
-                return 0;
-            }
-
-            function update() {
-                const d = parseFloat(els.distance.value);
-                const tSec = parseTime(els.time.value);
-
-                if (!d || !tSec || d <= 0) {
-                    // Clear UI if invalid
-                    els.pred5k.textContent = "--:--";
-                    els.vdot.textContent = "--";
-                    return;
-                }
-
-                // 1. Predict 5k using Riegel: T2 = T1 * (D2/D1)^1.06
-                const pred5kSec = tSec * Math.pow(5000 / d, 1.06);
-                const pred5kPace = pred5kSec / 5;
-
-                els.pred5k.textContent = formatTime(pred5kSec);
-                els.vdot.textContent = getVDOT(pred5kSec);
-
-                // 2. Calculate Paces (Linear Regression derived from user data)
-                // 30KP (10min): 1.0552 * 5k_pace + 15.19
-                const p10 = 1.0552 * pred5kPace + 15.19;
-                els.pace10.textContent = formatTime(p10) + "/km";
-                els.dist10.textContent = Math.round((600 / p10) * 1000) + " m";
-
-                // HMP (6min): 1.0256 * 5k_pace + 14.12
-                const p6 = 1.0256 * pred5kPace + 14.12;
-                els.pace6.textContent = formatTime(p6) + "/km";
-                els.dist6.textContent = Math.round((360 / p6) * 1000) + " m";
-
-                // 15KP (3min): 1.0020 * 5k_pace + 13.20
-                const p3 = 1.0020 * pred5kPace + 13.20;
-                els.pace3.textContent = formatTime(p3) + "/km";
-                els.dist3.textContent = Math.round((180 / p3) * 1000) + " m";
-
-                // Easy Pace
-                const pEasy = getEasyPace(pred5kSec);
-                els.paceEasy.textContent = formatTime(pEasy) + "/km";
-            }
-
-            function copyResults() {
-                const inputTime = els.time.value;
-                const inputDist = els.distance.value;
-                const currentVDOT = els.vdot.textContent;
-
-                const results = [
-                    `NSA Pacing (TT: ${inputDist}m in ${inputTime})`,
-                    `VDOT: ${currentVDOT}`,
-                    ``,
-                    `Sub-T Workouts:`,
-                    `- 10min (30KP): ${els.pace10.textContent}`,
-                    `- 6min (HMP): ${els.pace6.textContent}`,
-                    `- 3min (15KP): ${els.pace3.textContent}`,
-                    ``,
-                    `Easy Pace: ${els.paceEasy.textContent}`
-                ].join('\n');
-
-                navigator.clipboard.writeText(results).then(() => {
-                    const btn = document.getElementById('copy-btn');
-                    const originalText = btn.childNodes[2].textContent; // " Copy" text node
-                    btn.childNodes[2].textContent = " Copied!";
-                    setTimeout(() => {
-                        btn.childNodes[2].textContent = originalText;
-                    }, 1500);
-                }).catch(err => console.error("Failed to copy", err));
-            }
-
-            // --- Event Listeners ---
-            if (els.distPreset) {
-                els.distPreset.addEventListener('change', () => {
-                    const val = els.distPreset.value;
-                    if (val !== 'custom') {
-                        els.distance.value = val;
-                        update();
-                    }
-                });
-            }
-
-            if (els.distance) {
-                els.distance.addEventListener('input', () => {
-                    const val = els.distance.value;
-                    // Sync dropdown logic
-                    let foundOptions = Array.from(els.distPreset.options).filter(o => o.value === val);
-                    els.distPreset.value = foundOptions.length > 0 ? val : 'custom';
-                    update();
-                });
-            }
-
-            if (els.time) {
-                els.time.addEventListener('input', update);
-            }
-
-            if (els.copyBtn) {
-                els.copyBtn.addEventListener('click', copyResults);
-            }
-
-            // Initialize
-            update();
-        })();
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(() => console.log('SW Ready'))
+                .catch(err => console.error('SW Fail', err));
+        }
     </script>
-
 </body>
 
 </html>
