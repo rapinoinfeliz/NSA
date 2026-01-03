@@ -878,7 +878,7 @@ export function handleChartHover(e, totalW, chartW, padLeft, dataLen) {
 export function handleChartClick(e, totalW, chartW, padLeft, dataLen) {
     const rect = e.target.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
-    const ratio = mouseX / chartW;
+    const ratio = mouseX / rect.width; // Fix: Use rendered width, not SVG logic width
     const len = dataLen || forecastData.length;
     const idx = Math.round(ratio * (len - 1));
 
