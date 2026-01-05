@@ -37,6 +37,7 @@ window.forecastSortCol = 'time';
 window.forecastSortDir = 'asc';
 window.selectedForeHour = null;
 window.isDark = false;
+let currentWeatherData = null; // Store for copy function
 
 export function toggleDarkMode() {
     isDark = !isDark;
@@ -284,6 +285,42 @@ export function getImpactColor(pct) {
     return "#c084fc"; // Purple
 }
 
+export function copyConditions() {
+    if (!currentWeatherData) return;
+    const w = currentWeatherData;
+
+    // Format: "Florianópolis 08:00 | 24°C (Feels 26) | Dew 20°C | Wind 15kph SE | Rain 0mm"
+    const temp = w.temperature_2m;
+    const feels = w.apparent_temperature;
+    const dew = w.dew_point_2m;
+    const wind = w.wind_speed_10m;
+    const windDir = w.wind_direction_10m;
+
+    const getCardinal = (angle) => ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(angle / 45) % 8];
+    const dirStr = getCardinal(windDir);
+    const rain = w.precipitation || 0;
+    const hum = w.relative_humidity_2m;
+
+    const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+    const text = `Run Conditions ${time}\nTemp: ${temp.toFixed(1)}°C (Feels ${feels.toFixed(1)}°C)\nDew Point: ${dew.toFixed(1)}°C\nHumidity: ${hum}%\nWind: ${wind.toFixed(1)} km/h ${dirStr}\nRain (2h): ${rain.toFixed(1)} mm`;
+
+    navigator.clipboard.writeText(text).then(() => {
+        // Simple visual feedback (optional, button handles its own active state usually but we can alert or toast)
+        // For now, we assume user sees the button feedback if we implemented it, or just trusts it.
+        // Let's toggle the button text temporarily if possible, but element query is hard here.
+        // Just console log.
+        console.log("Conditions copied to clipboard");
+        const btn = document.getElementById('btn-copy-cond');
+        if (btn) {
+            const original = btn.innerHTML;
+            btn.innerHTML = 'Copied!';
+            setTimeout(() => btn.innerHTML = original, 2000);
+        }
+    }).catch(err => console.error('Failed to copy', err));
+}
+window.copyConditions = copyConditions;
+
 export function getDewColor(d) {
     if (d < 15) return "#4ade80"; // Green (Comfortable) - User Requirement
     if (d < 20) return "#facc15"; // Yellow (Sticky)
@@ -472,7 +509,33 @@ export function renderCurrentTab(w, a, prob2h = 0, precip2h = 0, daily) {
     // sectionStyle is now cardStyle conceptually, but keeping name for minimal changes
     const sectionStyle = "background:var(--card-bg); padding:16px; border-radius:12px; border:1px solid var(--border-color);";
 
-    let html = '';
+    // Update global store for copy
+    currentWeatherData = w;
+
+    // Header with Copy Button
+    let html = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h2 style="margin:0; font-size:1.2rem; font-weight:700;">Current Conditions</h2>
+        <button id="btn-copy-cond" onclick="window.copyConditions()" style="
+            background:rgba(255,255,255,0.1); 
+            border:none; 
+            color:var(--text-primary); 
+            padding:6px 12px; 
+            border-radius:6px; 
+            font-size:0.8rem; 
+            cursor:pointer; 
+            display:flex; 
+            align-items:center; 
+            gap:6px; 
+            transition:background 0.2s;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            Copy
+        </button>
+    </div>
+    `;
 
     // Helper for info icon
     const infoIcon = (title, text) => {
