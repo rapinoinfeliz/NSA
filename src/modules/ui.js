@@ -368,10 +368,19 @@ export function getCondColor(type, val) {
         return cGood;
     }
     if (type === 'wind') {
-        if (val >= 40) return cBad;
-        if (val >= 25) return cWarn;
-        if (val >= 15) return cFair;
-        return cGood;
+        if (val >= 40) return cBad;   // Severe (> 40)
+        if (val >= 30) return cWarn;  // Strong (30-40)
+        if (val >= 20) return cFair;  // Moderate (20-30)
+        if (val >= 10) return cBlue;  // Light (10-20) - Using Blue to distinguish from Green "Calm" if desired, or just Green?
+        // User didn't specify color for intermediate, but usually:
+        // < 10: Green
+        // 10-20: Blue/Green? Let's stick to the color palette. 
+        // 20-30: Yellow (Fair)
+        // 30-40: Orange (Warn)
+        // > 40: Red (Bad)
+        // Let's map: <10 Green, 10-20 Blue, 20-30 Yellow, 30-40 Orange, >40 Red.
+        if (val >= 10) return cBlue;
+        return cGood;                 // Calm (< 10)
     }
     if (type === 'uv') {
         if (val >= 8) return cBad;
@@ -561,7 +570,7 @@ export function renderCurrentTab(w, a, prob2h = 0, precip2h = 0, daily) {
                         <div style="${headStyle}"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"></path></svg> Wind</div>
                         <div style="${gridStyle}">
                             <div style="${itemStyle}">
-                                <div style="${labelStyle}">Speed ${infoIcon('Wind Speed', 'Sustained wind speed at 10m height.<br><br><span style=&quot;color:#4ade80&quot;><b>< 15 km/h (Light):</b></span> Negligible.<br><span style=&quot;color:#facc15&quot;><b>15-24 km/h (Moderate):</b></span> Noticeable.<br><span style=&quot;color:#fb923c&quot;><b>25-39 km/h (High):</b></span> Significant drag.<br><span style=&quot;color:#f87171&quot;><b>40+ km/h (Severe):</b></span> Stormy.')}</div>
+                                <div style="${labelStyle}">Speed ${infoIcon('Wind Speed', 'Sustained wind speed at 10m height.<br><br><span style=&quot;color:#4ade80&quot;><b>< 10 km/h (Calm):</b></span> No impact.<br><span style=&quot;color:#60a5fa&quot;><b>10-20 km/h (Light):</b></span> Barely noticeable.<br><span style=&quot;color:#facc15&quot;><b>20-30 km/h (Moderate):</b></span> Effort increases.<br><span style=&quot;color:#fb923c&quot;><b>30-40 km/h (Strong):</b></span> Pace unreliable.<br><span style=&quot;color:#f87171&quot;><b>> 40 km/h (Severe):</b></span> Running compromised.')}</div>
                                 <div style="${valStyle}; color:${getCondColor('wind', wind)}">${safeVal(wind)} <span style="font-size:0.7em">km/h</span></div>
                             </div>
                             <div style="${itemStyle}">
