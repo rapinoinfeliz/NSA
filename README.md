@@ -50,7 +50,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ##  Contact
 
-Rapino Infeliz - [github](https://github.com/rapinoinfeliz) [email](rapinoinfeliz@gmail.com)
+Rapino Infeliz - [github](https://github.com/rapinoinfeliz) [email](mailto:rapinoinfeliz@gmail.com)
 
 Project Link: [https://github.com/rapinoinfeliz/RunWeather](https://github.com/rapinoinfeliz/RunWeather)
 
