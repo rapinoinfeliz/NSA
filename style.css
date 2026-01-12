@@ -1244,8 +1244,11 @@ select.modern-input {
     transform: translateX(-50%) translateY(0);
 }
 
-.tooltip-content a {
-    color: var(--accent-color);
+.tooltip-content a,
+.tooltip-content a:visited,
+.forecast-tooltip a,
+.forecast-tooltip a:visited {
+    color: #60a5fa !important;
     text-decoration: none;
     font-weight: 500;
     border-bottom: 1px solid transparent;
