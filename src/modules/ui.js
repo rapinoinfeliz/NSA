@@ -2181,12 +2181,14 @@ export function renderForecastTable(tableBodyId, dayLimit, isAppend = false) {
                 </div>
             </td>
             <td style="text-align:center;">
-                <span class="impact-badge" style="background:${impactColor}; color:#000; font-weight:600; padding:2px 6px; border-radius:4px; font-size:0.9em;">
+                <span class="impact-badge" style="background:${impactColor}; color:#000; font-weight:600;">
                     ${pct.toFixed(2)}%
                 </span>
             </td>
-            <td style="text-align:center; font-family:'Courier New', monospace; font-size:0.9em;">
-                ${formatTime(adjPace)}
+            <td style="text-align:center;">
+                <span style="font-family:'Courier New', monospace; font-size:1em; color:var(--accent-color);">
+                    ${formatTime(adjPace)}
+                </span>
             </td>
         </tr>`;
     }).join('');
