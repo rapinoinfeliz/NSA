@@ -153,6 +153,11 @@ h1 {
     font-size: 0.85rem;
     margin-bottom: 6px;
     color: var(--text-secondary);
+    min-height: 2.4em;
+    /* Ensure alignment even if one wraps */
+    display: flex;
+    align-items: flex-end;
+    /* Align text to bottom */
 }
 
 .input-row {
@@ -1310,7 +1315,7 @@ select.modern-input {
     grid-template-columns: 1fr 1fr 1fr;
 }
 
-/* Neutral Toggler Active State */
+/* Impact Box Styling */
 .tag-btn.toggler.active {
     background: rgba(255, 255, 255, 0.9);
     color: #161b22;

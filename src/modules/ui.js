@@ -1891,22 +1891,13 @@ export function update(els, hapCalc) {
 
             // Headwind (Slowdown)
             if (Math.abs(headwindPct) > 0.1) {
-                html += `<div style="margin-bottom:2px;">Headwind: <span style="color:#f87171">~${headwindPct.toFixed(1)}% slowdown</span></div>`;
+                html += `<div style="margin-bottom:4px;">Headwind<br><span style="color:#f87171">~${headwindPct.toFixed(1)}% slowdown</span></div>`;
             }
 
             // Tailwind (Increase/Speedup)
-            // Note: tailwindPct is likely negative if formulated as "cost reduction"?
-            // Or positive if "speed increase"?
-            // WindCalc implementation:
-            //   costWind = MetCost(v, -wind) -> returns total cost.
-            //   adjSpeed = calculateWindAdjustedPace(v, -wind) -> returns equivalent calm air speed.
-            //   Impact = (Base - Adj) / Base * 100
-            //   If Adj > Base (faster), result is negative.
-            //   So -1.2% means 1.2% faster.
-
             if (Math.abs(tailwindPct) > 0.1) {
                 const val = Math.abs(tailwindPct);
-                html += `<div>Tailwind: <span style="color:#22c55e">~${val.toFixed(1)}% faster</span></div>`;
+                html += `<div>Tailwind<br><span style="color:#22c55e">~${val.toFixed(1)}% faster</span></div>`;
             }
 
             if (!html) html = "Wind Impact: Negligible";
