@@ -2318,29 +2318,40 @@ let climateRenderLimit = 50;
 const SCROLL_BATCH_SIZE = 50;
 let isScrollListenersSetup = false;
 
+let isBatchLoading = false;
+
 export function setupTableScrollListeners() {
     if (isScrollListenersSetup) return;
 
-    // Forecast Table
-    const foreWrapper = document.querySelector('#forecast-body')?.closest('.table-wrapper');
+    // Forecast Table - use correct ID
+    const foreBody = document.getElementById('forecast-body-16');
+    const foreWrapper = foreBody?.closest('.table-wrapper');
     if (foreWrapper) {
         foreWrapper.addEventListener('scroll', () => {
-            if (foreWrapper.scrollTop + foreWrapper.clientHeight >= foreWrapper.scrollHeight - 100) {
-                renderForecastTable(null, null, true); // Append mode
+            if (isBatchLoading) return;
+            if (foreWrapper.scrollTop + foreWrapper.clientHeight >= foreWrapper.scrollHeight - 150) {
+                isBatchLoading = true;
+                renderForecastTable('forecast-body-16', 14, true);
+                setTimeout(() => { isBatchLoading = false; }, 200);
             }
         });
     }
 
     // Climate Table
-    const climWrapper = document.querySelector('#climateTableBody')?.closest('.table-wrapper');
+    const climBody = document.getElementById('climateTableBody');
+    const climWrapper = climBody?.closest('.table-wrapper');
     if (climWrapper) {
         climWrapper.addEventListener('scroll', () => {
-            if (climWrapper.scrollTop + climWrapper.clientHeight >= climWrapper.scrollHeight - 100) {
-                renderClimateTable(true); // Append mode
+            if (isBatchLoading) return;
+            if (climWrapper.scrollTop + climWrapper.clientHeight >= climWrapper.scrollHeight - 150) {
+                isBatchLoading = true;
+                renderClimateTable(true);
+                setTimeout(() => { isBatchLoading = false; }, 200);
             }
         });
     }
 
     isScrollListenersSetup = true;
+    console.log("Virtual Scroll Ready");
 }
 

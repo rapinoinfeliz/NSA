@@ -580,6 +580,7 @@ if (document.readyState === 'loading') {
 // Actually, I will replace the end of the file and invoke it.
 
 setupGlobalEvents();
+UI.setupTableScrollListeners();
 // Globals for legacy (still needed until HTML is fully stripped)
 window.fetchWeather = () => refreshWeather(true);
 window.openTab = UI.openTab;
