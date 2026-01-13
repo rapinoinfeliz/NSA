@@ -871,6 +871,8 @@ export function renderForecastChart(containerId, dayLimit) {
     svg += `<path d="${pathDew}" fill="none" stroke="#60a5fa" stroke-width="2" />`;
     svg += `<path d="${pathTemp}" fill="none" stroke="#f87171" stroke-width="2" />`;
 
+
+
     // Interaction Layer (Transparent)
     // We attach mouse events to the parent div or this rect
     // Easier to use inline events on rect for quick implementation
@@ -1034,27 +1036,48 @@ export function filterClimateByImpact(idx, el) {
     renderClimateTable();   // To filter rows
 }
 
-export function renderClimateTable() {
+export function renderClimateTable(isAppend = false) {
     const tb = document.getElementById('climateTableBody');
     if (!tb) return;
 
+    // Reset pagination limit if not appending
+    if (!isAppend) {
+        climateRenderLimit = 50;
+    } else {
+        climateRenderLimit += SCROLL_BATCH_SIZE;
+    }
+
     let data = (climateData || window.climateData || []).slice();
 
-    // Filter
+    // 1. Filter by Clicked Heatmap Cell (Week-Hour)
     if (selectedClimateKey) {
         const [selW, selH] = selectedClimateKey.split('-').map(Number);
         data = data.filter(d => d.week === selW && d.hour === selH);
 
         // Show Filter Label
-        document.getElementById('climate-filter-label').classList.remove('hidden');
-        document.getElementById('climate-filter-label').innerText = `Week ${selW}, ${selH}:00`;
-        document.getElementById('climate-clear-filter').classList.remove('hidden');
+        const lbl = document.getElementById('climate-filter-label');
+        if (lbl) {
+            lbl.classList.remove('hidden');
+            lbl.innerText = `Week ${selW}, ${selH}:00`;
+        }
+        const clr = document.getElementById('climate-clear-filter');
+        if (clr) clr.classList.remove('hidden');
     } else {
-        document.getElementById('climate-filter-label').classList.add('hidden');
-        document.getElementById('climate-clear-filter').classList.add('hidden');
+        const lbl = document.getElementById('climate-filter-label');
+        if (lbl) lbl.classList.add('hidden');
+        const clr = document.getElementById('climate-clear-filter');
+        if (clr) clr.classList.add('hidden');
     }
 
-    // Sort
+    // 2. Filter by Impact Category (Legend Click)
+    if (climateImpactFilter !== null) {
+        data = data.filter(d => {
+            const catIdx = getImpactCategory(d.mean_impact);
+            return catIdx === climateImpactFilter;
+        });
+    }
+
+    // 3. Sort
     const dir = climateSortDir === 'asc' ? 1 : -1;
 
     // Reset Icons
@@ -1078,7 +1101,14 @@ export function renderClimateTable() {
         return 0;
     });
 
-    tb.innerHTML = data.map(d => {
+    // 4. Pagination Slice
+    const startIdx = isAppend ? climateRenderLimit - SCROLL_BATCH_SIZE : 0;
+    const endIdx = climateRenderLimit;
+    const itemsToRender = data.slice(startIdx, endIdx);
+
+    if (isAppend && itemsToRender.length === 0) return; // Nothing left to append
+
+    const html = itemsToRender.map(d => {
         const dateStr = getDateFromWeek(d.week);
         // Match Forecast Table Logic
         const timeStr = `${String(d.hour).padStart(2, '0')}:00`;
@@ -1088,12 +1118,6 @@ export function renderClimateTable() {
         else if (d.mean_impact >= 3.5) impactColor = "#f87171";
         else if (d.mean_impact >= 2.0) impactColor = "#fb923c";
         else if (d.mean_impact >= 0.5) impactColor = "#facc15";
-
-        if (climateImpactFilter !== null) {
-            const catIdx = getImpactCategory(d.mean_impact);
-            // console.log("Filtering:", { val: d.mean_impact, cat: catIdx, filter: climateImpactFilter });
-            if (catIdx !== climateImpactFilter) return '';
-        }
 
         // Rain/Wind logic similar to Forecast
         const rainColor = d.mean_precip > 0 ? '#60a5fa' : 'inherit';
@@ -1119,6 +1143,15 @@ export function renderClimateTable() {
                 </td>
             </tr>`;
     }).join('');
+
+    if (isAppend) {
+        tb.insertAdjacentHTML('beforeend', html);
+    } else {
+        tb.innerHTML = html;
+        if (tb.parentElement && tb.parentElement.parentElement) {
+            tb.parentElement.parentElement.scrollTop = 0;
+        }
+    }
 }
 
 export function renderClimateLegend() {
@@ -1997,14 +2030,21 @@ export function useGPS() {
 }
 
 
-export function renderForecastTable(tableBodyId, dayLimit) {
+export function renderForecastTable(tableBodyId, dayLimit, isAppend = false) {
     const tbody = document.getElementById(tableBodyId || 'forecast-body');
     if (!tbody || !forecastData.length) return;
+
+    // Reset limit if not appending (new filter/sort/initial load)
+    if (!isAppend) {
+        forecastRenderLimit = 50;
+    } else {
+        forecastRenderLimit += SCROLL_BATCH_SIZE;
+    }
 
     const table = tbody.closest('table');
     const thead = table ? table.querySelector('thead tr') : null;
 
-    if (thead) {
+    if (thead && !isAppend) { // Update header only on fresh render
         const headers = thead.querySelectorAll('th');
         const colMap = ['time', 'temp', 'dew', 'rain', 'wind', 'impact', 'impact'];
 
@@ -2029,7 +2069,6 @@ export function renderForecastTable(tableBodyId, dayLimit) {
     }
 
     let baseSec = getBasePaceSec();
-    let html = '';
 
     // Filter
     let viewData = [];
@@ -2087,7 +2126,14 @@ export function renderForecastTable(tableBodyId, dayLimit) {
         return new Date(a.time) - new Date(b.time);
     });
 
-    tbody.innerHTML = viewData.map(h => {
+    // Pagination Slice
+    const startIdx = isAppend ? forecastRenderLimit - SCROLL_BATCH_SIZE : 0;
+    const endIdx = forecastRenderLimit;
+    const itemsToRender = viewData.slice(startIdx, endIdx);
+
+    if (!itemsToRender.length && isAppend) return; // No more data to append
+
+    const html = itemsToRender.map(h => {
         const date = new Date(h.time);
         const now = new Date();
         const isToday = date.getDate() === now.getDate();
@@ -2122,23 +2168,38 @@ export function renderForecastTable(tableBodyId, dayLimit) {
                 <div style="font-size:0.75em;">${dayName}</div>
                 <div style="font-size:1em; color:var(--text-primary); font-weight:500;">${timeStr}</div>
             </td>
-            <td style="text-align:center; color:${tempColor}">${h.temp != null ? h.temp.toFixed(1) : '--'}°</td>
-            <td style="text-align:center; color:${dewColor}">${h.dew != null ? h.dew.toFixed(1) : '--'}°</td>
-            <td style="text-align:center;">
-                <div style="color:${rainColor};">${rain > 0 ? rain.toFixed(1) + 'mm' : '-'}</div>
-                <div style="font-size:0.75em; color:${prob > 0 ? probColor : 'var(--text-secondary)'}; opacity:0.8;">${prob > 0 ? '(' + prob + '%)' : ''}</div>
+            <td style="text-align:center; color:${tempColor};">${h.temp != null ? h.temp.toFixed(1) : '-'}°</td>
+            <td style="text-align:center; color:${dewColor};">${h.dew != null ? h.dew.toFixed(1) : '-'}°</td>
+            <td style="text-align:center; color:${rainColor};">
+                <div style="font-weight:500;">${rain > 0 ? rain.toFixed(1) + 'mm' : '-'}</div>
+                <div style="font-size:0.75em; color:${probColor};">${prob}%</div>
             </td>
-            <td style="text-align:center; color:${windColor}">${wind.toFixed(0)} <span style="font-size:0.7em;color:var(--text-secondary)">km/h</span> <span style="${arrowStyle}">↓</span></td>
+            <td style="text-align:center; color:${windColor};">
+                <div>${wind.toFixed(1)} <span style="font-size:0.7em; color:var(--text-secondary)">km/h</span></div>
+                <div style="font-size:0.7em; color:var(--text-secondary); display:flex; align-items:center; justify-content:center;">
+                   <span style="${arrowStyle}">↓</span>
+                </div>
+            </td>
             <td style="text-align:center;">
-                <span class="impact-badge" style="background:${impactColor}; color:${pct > 2.0 ? '#000' : '#000'}; font-weight:600;">
-                    ${pct.toFixed(1)}%
+                <span class="impact-badge" style="background:${impactColor}; color:#000; font-weight:600; padding:2px 6px; border-radius:4px; font-size:0.9em;">
+                    ${pct.toFixed(2)}%
                 </span>
             </td>
-            <td style="text-align:right; font-family:monospace; font-size:1.1em; color:var(--accent-color);">
+            <td style="text-align:center; font-family:'Courier New', monospace; font-size:0.9em;">
                 ${formatTime(adjPace)}
             </td>
         </tr>`;
     }).join('');
+
+    if (isAppend) {
+        tbody.insertAdjacentHTML('beforeend', html);
+    } else {
+        tbody.innerHTML = html;
+        // Reset scroll position on full re-render
+        if (tbody.parentElement && tbody.parentElement.parentElement) {
+            tbody.parentElement.parentElement.scrollTop = 0;
+        }
+    }
 }
 
 export function renderVDOTDetails() {
@@ -2249,5 +2310,37 @@ export function setLoading(type, visible) {
         // Hide immediately
         el.classList.remove('visible');
     }
+}
+
+// --- Infinite Scroll State ---
+let forecastRenderLimit = 50;
+let climateRenderLimit = 50;
+const SCROLL_BATCH_SIZE = 50;
+let isScrollListenersSetup = false;
+
+export function setupTableScrollListeners() {
+    if (isScrollListenersSetup) return;
+
+    // Forecast Table
+    const foreWrapper = document.querySelector('#forecast-body')?.closest('.table-wrapper');
+    if (foreWrapper) {
+        foreWrapper.addEventListener('scroll', () => {
+            if (foreWrapper.scrollTop + foreWrapper.clientHeight >= foreWrapper.scrollHeight - 100) {
+                renderForecastTable(null, null, true); // Append mode
+            }
+        });
+    }
+
+    // Climate Table
+    const climWrapper = document.querySelector('#climateTableBody')?.closest('.table-wrapper');
+    if (climWrapper) {
+        climWrapper.addEventListener('scroll', () => {
+            if (climWrapper.scrollTop + climWrapper.clientHeight >= climWrapper.scrollHeight - 100) {
+                renderClimateTable(true); // Append mode
+            }
+        });
+    }
+
+    isScrollListenersSetup = true;
 }
 
