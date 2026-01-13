@@ -2186,7 +2186,7 @@ export function renderForecastTable(tableBodyId, dayLimit, isAppend = false) {
                 </span>
             </td>
             <td style="text-align:center;">
-                <span style="font-family:'Courier New', monospace; font-size:1em; color:var(--accent-color);">
+                <span style="font-family:'Courier New', monospace; font-size:1.15em; font-weight:700; color:var(--accent-color);">
                     ${formatTime(adjPace)}
                 </span>
             </td>
