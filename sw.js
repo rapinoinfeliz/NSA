@@ -1,4 +1,4 @@
-const CACHE_NAME = 'runweather-v49-deploy';
+const CACHE_NAME = 'runweather-v57-fix-exports';
 const ASSETS = [
     './',
     './index.html',
@@ -15,6 +15,7 @@ const ASSETS = [
     './src/modules/storage.js',
     './src/modules/engine.js',
     './src/modules/climate_manager.js',
+    './src/modules/ui/effects.js',
     './data/hap_grid.js'
 ];
 
@@ -45,8 +46,11 @@ self.addEventListener('fetch', (e) => {
     }
 
     e.respondWith(
-        caches.match(e.request).then((res) => {
-            return res || fetch(e.request);
+        caches.match(e.request, { ignoreSearch: true }).then((res) => {
+            return res || fetch(e.request).catch((err) => {
+                console.warn('SW Fetch Fail:', e.request.url, err);
+                // Optional: Return fallback if offline (e.g., offline.html)
+            });
         })
     );
 });

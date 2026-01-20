@@ -1,7 +1,7 @@
 import { UIState } from './state.js';
 import { renderAllForecasts, renderClimateHeatmap, renderClimateTable, renderClimateLegend, calculateBestRunTime } from './renderers.js';
 import { formatTime } from '../core.js';
-import { getCondColor } from './utils.js'; // used in handleCellHover maybe?
+import { getCondColor, showToast } from './utils.js'; // used in handleCellHover maybe?
 
 // Some events might use window.hapCalc?
 // ui.js had it globally available or via module scope if defined.
@@ -28,17 +28,8 @@ export function copyConditions() {
     const text = `Run Conditions ${time} | Temp: ${temp.toFixed(1)}°C (Feels ${feels.toFixed(1)}°C) | Dew Point: ${dew.toFixed(1)}°C | Humidity: ${hum}% | Wind: ${wind.toFixed(1)} km/h ${dirStr} | Rain (2h): ${rain.toFixed(1)} mm`;
 
     navigator.clipboard.writeText(text).then(() => {
-        // Simple visual feedback (optional, button handles its own active state usually but we can alert or toast)
-        // For now, we assume user sees the button feedback if we implemented it, or just trusts it.
-        // Let's toggle the button text temporarily if possible, but element query is hard here.
-        // Just console log.
-        console.log("Conditions copied to clipboard");
-        const btn = document.getElementById('btn-copy-cond');
-        if (btn) {
-            const original = btn.innerHTML;
-            btn.innerHTML = 'Copied!';
-            setTimeout(() => btn.innerHTML = original, 2000);
-        }
+        showToast("Conditions copied!");
+        // Optional button feedback
     }).catch(err => console.error('Failed to copy', err));
 }
 

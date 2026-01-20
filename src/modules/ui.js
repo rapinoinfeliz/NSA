@@ -7,10 +7,11 @@ import { saveToStorage } from './storage.js';
 export { renderCurrentTab, renderForecastChart, renderClimateTable, renderClimateLegend, renderClimateHeatmap, renderForecastHeatmap, renderForecastTable, renderVDOTDetails, renderAllForecasts, renderOverview, calculateBestRunTime } from './ui/renderers.js';
 import { UIState } from './ui/state.js';
 export { UIState };
-import { infoIcon, getImpactColor, getDewColor, getCondColor, getImpactCategory, getBasePaceSec, getDateFromWeek } from './ui/utils.js';
-export { infoIcon, getImpactColor, getDewColor, getCondColor, getImpactCategory, getBasePaceSec, getDateFromWeek };
+import { infoIcon, getImpactColor, getDewColor, getCondColor, getImpactCategory, getBasePaceSec, getDateFromWeek, animateValue } from './ui/utils.js';
+export { infoIcon, getImpactColor, getDewColor, getCondColor, getImpactCategory, getBasePaceSec, getDateFromWeek, animateValue };
 import { openTab, setPaceMode, toggleForeSort, setBestRunRange, toggleImpactFilter, copyConditions, sortForecastTable, handleCellHover, showForeTooltip, moveForeTooltip, hideForeTooltip } from './ui/events.js';
 export { openTab, setPaceMode, toggleForeSort, setBestRunRange, toggleImpactFilter, copyConditions, sortForecastTable, handleCellHover, showForeTooltip, moveForeTooltip, hideForeTooltip };
+import { initRipple } from './ui/effects.js';
 
 // Legacy Window Bindings for HTML Event Handlers
 window.openTab = openTab;
@@ -474,7 +475,11 @@ export function update(els, hapCalc) {
         els.inputPace.value = formatTime(res.inputPaceSec);
     }
     if (els.pred5k) els.pred5k.textContent = formatTime(res.pred5kSec);
-    if (els.vdot) els.vdot.textContent = res.vdot.toFixed(1);
+    if (els.vdot) {
+        // Animate VDOT
+        const current = parseFloat(els.vdot.textContent) || 0;
+        animateValue('vdot-val', current, res.vdot, 800);
+    }
     const elThreshold = document.getElementById('vdot-threshold');
     if (elThreshold) {
         elThreshold.textContent = `${formatTime(res.paces.threshold)}/km`;
@@ -769,6 +774,10 @@ export function setupTableScrollListeners() {
     }
 
     UIState.isScrollListenersSetup = true;
+    UIState.isScrollListenersSetup = true;
     console.log("Virtual Scroll Ready");
+
+    // Init Effects
+    initRipple();
 }
 

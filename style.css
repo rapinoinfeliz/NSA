@@ -18,8 +18,34 @@
     box-sizing: border-box;
 }
 
+/* Custom Scrollbar (Slim & Dark) */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
 body {
-    background-color: var(--bg-color);
+    background-color: #0d1117;
+    /* Static "Premium Void" Background */
+    background-image:
+        radial-gradient(circle at 50% 0%, rgba(88, 166, 255, 0.08) 0%, transparent 70%),
+        radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.03) 0%, transparent 50%);
+    /* Very subtle color hint */
+    background-attachment: fixed;
+
     color: var(--text-primary);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     margin: 0;
@@ -29,6 +55,8 @@ body {
     align-items: center;
     min-height: 100vh;
 }
+
+/* Removed @keyframes gradientMesh */
 
 .container {
     width: 100%;
@@ -807,7 +835,8 @@ h1 {
 .modern-label {
     font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
+    letter-spacing: 1.5px;
+    /* Editorial Typography */
     color: var(--accent-color);
     margin-bottom: 12px;
     font-weight: 700;
@@ -834,30 +863,44 @@ h1 {
     min-width: 0;
 }
 
+/* Floating Label Transition */
 .floating-input-group label {
     font-size: 0.7rem;
     color: var(--text-secondary);
     margin-bottom: 4px;
-    font-weight: 500;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    transform-origin: left bottom;
+}
+
+.floating-input-group:focus-within label {
+    color: var(--accent-color);
+    transform: translateY(-2px);
+    text-shadow: 0 0 8px rgba(88, 166, 255, 0.3);
 }
 
 .modern-input {
     width: 100%;
     padding: 12px 14px;
-    background-color: rgba(13, 17, 23, 0.6);
-    border: 1px solid rgba(88, 166, 255, 0.2);
-    border-radius: 8px;
+    background-color: rgba(13, 17, 23, 0.4);
+    border: 1px solid rgba(88, 166, 255, 0.1);
+    border-bottom: 2px solid rgba(88, 166, 255, 0.2);
+    border-radius: 8px 8px 0 0;
     color: #fff;
     font-size: 0.95rem;
     font-family: 'Var', monospace;
-    /* Monospace for numbers */
-    transition: all 0.2s ease;
+    font-weight: 500;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 0 transparent;
 }
 
+/* Neon Focus State */
 .modern-input:focus {
-    border-color: var(--accent-color);
-    background-color: rgba(13, 17, 23, 0.9);
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    background-color: rgba(13, 17, 23, 0.8);
+    border-color: rgba(88, 166, 255, 0.2);
+    border-bottom-color: var(--accent-color);
+    box-shadow: 0 4px 12px -2px rgba(88, 166, 255, 0.2);
 }
 
 /* Select Styling Override */
@@ -867,6 +910,17 @@ select.modern-input {
     background-repeat: no-repeat;
     background-position: right 12px center;
     padding-right: 32px;
+}
+
+/* Hide Spin Buttons for Number Inputs */
+.modern-input[type="number"]::-webkit-outer-spin-button,
+.modern-input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.modern-input[type="number"] {
+    -moz-appearance: textfield;
 }
 
 /* Mobile Optimization */
@@ -1848,4 +1902,273 @@ select.modern-input {
 
 .leaflet-container .leaflet-control-attribution a {
     color: #aaa !important;
+}
+
+/* Utility: Gradient Text */
+.text-gradient-primary {
+    background: linear-gradient(135deg, #fff 30%, var(--accent-color) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.1));
+}
+
+/* Animated Gradient Border for Cards */
+@property --angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+}
+
+/* Refined Card Border (Static & Subtle) */
+.card-glow-border {
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    /* Base border */
+    background-clip: padding-box;
+    /* Ensure border doesn't overlap bg */
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.card-glow-border::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 13px;
+    /* Slightly larger than card */
+    padding: 1px;
+    /* Static Gradient: Accent top-left to transparent bottom-right */
+    background: linear-gradient(135deg, rgba(88, 166, 255, 0.4), rgba(255, 255, 255, 0.05) 40%, transparent);
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0.6;
+}
+
+.card-glow-border:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3), 0 0 15px rgba(88, 166, 255, 0.1);
+}
+
+.card-glow-border:hover::before {
+    opacity: 1;
+    background: linear-gradient(135deg, rgba(88, 166, 255, 0.6), rgba(88, 166, 255, 0.1) 50%, transparent);
+}
+
+@keyframes spinBorder {
+    to {
+        --angle: 360deg;
+    }
+}
+
+/* Utility: Shimmer Loading Skeleton */
+.skeleton-shimmer {
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0.05) 25%,
+            rgba(255, 255, 255, 0.1) 50%,
+            rgba(255, 255, 255, 0.05) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 6px;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Utility: Pulsing Status Indicator */
+.status-pulse {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.status-pulse::after {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background-color: #10b981;
+    /* Emerald-500 */
+    border-radius: 50%;
+    margin-left: 8px;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+    }
+
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
+
+/* --- BATCH 2 AESTHETIC IMPROVEMENTS --- */
+
+/* 1. Glassmorphism Tooltips */
+.forecast-tooltip {
+    position: fixed;
+    background: rgba(22, 27, 34, 0.85);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    pointer-events: none;
+    z-index: 9999;
+    display: none;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.tooltip-header {
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--accent-color);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.75rem;
+}
+
+/* 3. Fading Divider Utility */
+.divider-fade {
+    height: 1px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 100%);
+    border: none;
+    margin: 16px 0;
+}
+
+/* 4. Modern Table Styling (Zebra + Highlight) */
+.forecast-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 10px;
+    font-size: 0.85rem;
+}
+
+.forecast-table th {
+    text-align: left;
+    padding: 10px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.forecast-table td {
+    padding: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    color: var(--text-primary);
+    vertical-align: middle;
+}
+
+/* Zebra Striping (Subtle) */
+.forecast-table tr:nth-child(even) td {
+    background-color: rgba(255, 255, 255, 0.015);
+}
+
+/* Row Highlight */
+.forecast-table tr:hover td {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* 5. Ripple Effect */
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    transform: scale(0);
+    animation: ripple 0.6s linear;
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+.tag-btn,
+.tab-btn,
+.btn {
+    overflow: hidden;
+    /* Contain ripple */
+    position: relative;
+    /* For absolute ripple */
+}
+
+/* 6. Elegant Toast Notification */
+#toast-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    pointer-events: none;
+}
+
+.toast {
+    background: rgba(22, 27, 34, 0.9);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 200px;
+    justify-content: center;
+
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Weather Icons in Table */
+.weather-icon-sm {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+    vertical-align: middle;
+    margin-right: 6px;
+    opacity: 0.8;
 }

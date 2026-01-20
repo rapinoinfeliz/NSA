@@ -129,3 +129,49 @@ export function getDateFromWeek(w) {
     const date = new Date(2025, 0, 1 + (w - 1) * 7);
     return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}`;
 }
+
+export function getWeatherIcon(code) {
+    if (code == null) return '';
+    const sun = '<path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round"/>';
+    const cloud = '<path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" stroke-linecap="round" stroke-linejoin="round"/>';
+    const rain = '<path d="M20 16.2A4.5 4.5 0 0017.5 8h-1.8A7 7 0 104 14.9M16 14v6M12 16v6M8 14v6" stroke-linecap="round" stroke-linejoin="round"/>';
+
+    if (code <= 1) return `<svg class="weather-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${sun}</svg>`;
+    if (code <= 48) return `<svg class="weather-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${cloud}</svg>`;
+    return `<svg class="weather-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${rain}</svg>`;
+}
+
+export function showToast(message) {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg><span>${message}</span>`;
+    container.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+export function animateValue(id, start, end, duration) {
+    const obj = document.getElementById(id);
+    if (!obj) return;
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        // Ease Out Cubic
+        const ease = 1 - Math.pow(1 - progress, 3);
+        const val = ease * (end - start) + start;
+        obj.innerHTML = val.toFixed(1);
+        if (progress < 1) window.requestAnimationFrame(step);
+        else obj.innerHTML = end.toFixed(1);
+    };
+    window.requestAnimationFrame(step);
+}

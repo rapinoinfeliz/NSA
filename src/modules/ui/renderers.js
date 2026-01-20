@@ -1,5 +1,5 @@
 import { UIState } from './state.js';
-import { infoIcon, getImpactColor, getDewColor, getCondColor, getImpactCategory, getBasePaceSec, getDateFromWeek } from './utils.js';
+import { infoIcon, getImpactColor, getDewColor, getCondColor, getImpactCategory, getBasePaceSec, getDateFromWeek, getWeatherIcon } from './utils.js';
 import { HAPCalculator, VDOT_MATH, parseTime, formatTime, getEasyPace, getISOWeek } from '../core.js';
 import { calculatePacingState, calculateWBGT } from '../engine.js';
 // Chart.js is loaded globally via script tag 
@@ -230,7 +230,10 @@ export function renderForecastTable(tableBodyId, dayLimit, isAppend = false) {
         <tr style="${window.selectedForeHour && h.time === window.selectedForeHour ? 'background:var(--card-bg); font-weight:bold;' : ''}">
             <td style="padding:10px; color:var(--text-secondary); white-space:nowrap;">
                 <div style="font-size:0.75em;">${dayName}</div>
-                <div style="font-size:1em; color:var(--text-primary); font-weight:500;">${timeStr}</div>
+                <div style="font-size:1em; color:var(--text-primary); font-weight:500; display:flex; align-items:center;">
+                    ${getWeatherIcon(h.weathercode)} 
+                    ${timeStr}
+                </div>
             </td>
             <td style="text-align:center; color:${tempColor};">${h.temp != null ? h.temp.toFixed(1) : '-'}°</td>
             <td style="text-align:center; color:${dewColor};">${h.dew != null ? h.dew.toFixed(1) : '-'}°</td>
@@ -814,8 +817,28 @@ export function renderForecastChart(containerId, dayLimit) {
     }
 
     // Paths
-    svg += `<path d="${pathDew}" fill="none" stroke="#60a5fa" stroke-width="2" />`;
-    svg += `<path d="${pathTemp}" fill="none" stroke="#f87171" stroke-width="2" />`;
+    // Definitions for Gradients
+    svg += `<defs>
+        <linearGradient id="chartGradTemp" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#f87171" />
+            <stop offset="50%" stop-color="#fbbf24" />
+            <stop offset="100%" stop-color="#f87171" />
+        </linearGradient>
+        <linearGradient id="chartGradDew" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#3b82f6" />
+            <stop offset="100%" stop-color="#06b6d4" />
+        </linearGradient>
+        <linearGradient id="chartFillTemp" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f87171" stop-opacity="0.2" />
+            <stop offset="100%" stop-color="#f87171" stop-opacity="0" />
+        </linearGradient>
+    </defs>`;
+
+    // Fill Area (Optional, implies closing path properly which is hard with simple line logic without calculating bottom points)
+    // For now, simpler: Gradient Stroke.
+
+    svg += `<path d="${pathDew}" fill="none" stroke="url(#chartGradDew)" stroke-width="2" stroke-linecap="round" />`;
+    svg += `<path d="${pathTemp}" fill="none" stroke="url(#chartGradTemp)" stroke-width="2" stroke-linecap="round" />`;
 
 
 

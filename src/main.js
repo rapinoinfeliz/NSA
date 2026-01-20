@@ -427,7 +427,9 @@ function processForecast(hourly) {
             dew: hourly.dew_point_2m[i],
             rain: hourly.precipitation[i],
             prob: hourly.precipitation_probability[i],
-            wind: hourly.wind_speed_10m[i]
+            wind: hourly.wind_speed_10m[i],
+            dir: hourly.wind_direction_10m[i],
+            weathercode: hourly.weather_code[i]
         });
     }
     return data;
