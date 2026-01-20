@@ -110,18 +110,21 @@ export function renderForecastTable(tableBodyId, dayLimit, isAppend = false) {
 
     if (thead && !isAppend) { // Update header only on fresh render
         const headers = thead.querySelectorAll('th');
-        const colMap = ['time', 'temp', 'dew', 'rain', 'wind', 'impact', 'impact'];
+        const colMap = ['time', 'temp', 'dew', 'rain', 'wind', 'impact'];
 
         headers.forEach((th, i) => {
+            const colName = colMap[i];
             let text = th.getAttribute('data-title');
             if (!text) {
                 text = th.innerText.replace(/[▲▼↑↓]/g, '').trim();
+                // FIX: Compact Rain Header
+                if (colName === 'rain') text = 'Rain';
+                // FIX: Merge Impact/Pace Header
+                if (colName === 'impact') text = 'Pace';
                 th.setAttribute('data-title', text);
             }
             th.innerText = text;
             th.style.color = '';
-
-            const colName = colMap[i];
             let active = (UIState.forecastSortCol === colName);
             if (colName === 'rain' && UIState.forecastSortCol === 'prob') active = true;
 
@@ -228,10 +231,12 @@ export function renderForecastTable(tableBodyId, dayLimit, isAppend = false) {
 
         return `
         <tr style="${window.selectedForeHour && h.time === window.selectedForeHour ? 'background:var(--card-bg); font-weight:bold;' : ''}">
-            <td style="padding:10px; color:var(--text-secondary); white-space:nowrap;">
-                <div style="font-size:0.75em;">${dayName}</div>
-                <div style="font-size:1em; color:var(--text-primary); font-weight:500; display:flex; align-items:center;">
+            <td style="padding:6px; color:var(--text-secondary); white-space:nowrap;">
+                <div style="font-size:0.75em; display:flex; align-items:center; gap:1px;">
                     ${getWeatherIcon(h.weathercode)} 
+                    ${dayName}
+                </div>
+                <div style="font-size:1em; color:var(--text-primary); font-weight:500;">
                     ${timeStr}
                 </div>
             </td>
@@ -248,13 +253,11 @@ export function renderForecastTable(tableBodyId, dayLimit, isAppend = false) {
                 </div>
             </td>
             <td style="text-align:center;">
-                <span class="impact-badge" style="background:${impactColor}; color:#000; font-weight:600;">
-                    ${pct.toFixed(2)}%
-                </span>
-            </td>
-            <td style="text-align:center;">
-                <span style="font-family:'Courier New', monospace; font-size:1.15em; font-weight:700; color:var(--accent-color);">
+                 <div style="font-family:'Courier New', monospace; font-size:1em; font-weight:700; color:var(--accent-color); margin-bottom:2px;">
                     ${formatTime(adjPace)}
+                </div>
+                <span class="impact-badge" style="background:${impactColor}; color:#000; font-weight:600; font-size:0.75em;">
+                    ${pct.toFixed(2)}%
                 </span>
             </td>
         </tr>`;
