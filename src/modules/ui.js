@@ -512,10 +512,8 @@ export function update(els, hapCalc) {
         // 2. Heat Adjusted (if valid AND toggled)
         if (view.heat && res.weather.valid && res.weather.adjustedPaces[key]) {
             const adj = res.weather.adjustedPaces[key];
-            // Show even if insignificant? Or keeping logic? Let's keep logic but allow toggle to FORCE show if active?
-            // Actually, usually user wants to see "what is the adjustment".
-            // If toggle is ON, we show it (unless it's 0/invalid).
-            if (adj > 0 && adj !== pace) {
+            // Show only if meaningful difference (> 0.5s)
+            if (adj > 0 && Math.abs(adj - pace) > 0.5) {
                 cols.push({
                     label: "Heat",
                     paceSec: adj,
